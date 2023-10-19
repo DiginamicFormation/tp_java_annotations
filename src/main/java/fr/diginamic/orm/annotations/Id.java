@@ -6,19 +6,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A positionner sur une signature de classe afin de préciser le nom de la table
- * sur laquelle la classe est mappée
+ * Annotation à positionner sur l'attribut d'instance qui représente la clé
+ * primaire
  * 
  * @author RichardBONNAMY
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Table {
+@Target(ElementType.FIELD)
+public @interface Id {
 
-	/** Nom de la table en base
+	/** Nom de la colonne
 	 * @return String
 	 */
 	String nom();
-
 }

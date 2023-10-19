@@ -1,11 +1,13 @@
 package fr.diginamic.orm.entites;
 
 import fr.diginamic.orm.annotations.Colonne;
+import fr.diginamic.orm.annotations.Id;
 import fr.diginamic.orm.annotations.Table;
 
 @Table(nom="TAB_UTILISATEUR")
 public class Utilisateur {
 	
+	@Id(nom="ID")
 	private int id;
 	
 	@Colonne(nom="NOM", maxLength=50)

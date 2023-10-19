@@ -3,6 +3,7 @@ package fr.diginamic.orm;
 import java.lang.reflect.Field;
 
 import fr.diginamic.orm.annotations.Colonne;
+import fr.diginamic.orm.annotations.Id;
 import fr.diginamic.orm.annotations.Table;
 import fr.diginamic.orm.exceptions.SqlGeneratorException;
 
@@ -46,10 +47,11 @@ public class SqlGeneratorUtils {
 		for (int i = 0; i < instanceAttrs.length; i++) {
 
 			String columnName = getColumnName(instanceAttrs[i]);
-
-			sqlBuilder.append(columnName);
-			if (i < instanceAttrs.length - 1) {
-				sqlBuilder.append(", ");
+			if (columnName != null) {
+				sqlBuilder.append(columnName);
+				if (i < instanceAttrs.length - 1) {
+					sqlBuilder.append(", ");
+				}
 			}
 		}
 	}
@@ -88,6 +90,32 @@ public class SqlGeneratorUtils {
 				String sqlValue = getSqlValue(instanceAttrs[i], instance);
 
 				sqlBuilder.append(sqlValue);
+				if (i < instanceAttrs.length - 1) {
+					sqlBuilder.append(", ");
+				}
+			}
+		}
+	}
+
+	/**
+	 * Génère la liste des valeurs à partir des valeurs des attributs d'instance de
+	 * l'instance passée en paramètre.
+	 * 
+	 * @param sqlBuilder contient la requête SQL à compléter
+	 * @param instance   instance
+	 */
+	public static void generateColumnsAndValues(StringBuilder sqlBuilder, Object instance) {
+
+		Field[] instanceAttrs = instance.getClass().getDeclaredFields();
+
+		for (int i = 0; i < instanceAttrs.length; i++) {
+
+			if (instanceAttrs[i].isAnnotationPresent(Colonne.class)) {
+
+				String columnName = getColumnName(instanceAttrs[i]);
+				String sqlValue = getSqlValue(instanceAttrs[i], instance);
+
+				sqlBuilder.append(columnName).append("=").append(sqlValue);
 				if (i < instanceAttrs.length - 1) {
 					sqlBuilder.append(", ");
 				}
@@ -141,9 +169,60 @@ public class SqlGeneratorUtils {
 		}
 		// Certaines opérations sur les classes peuvent générer des exceptions.
 		catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new SqlGeneratorException(e);
+			throw new SqlGeneratorException(e.getMessage(), e);
 		}
 		return sqlValue;
+	}
+
+	/**
+	 * Recherche dans l'instance l'annotation @Id et plus particulièrement le nom de
+	 * la colonne en base de données.
+	 * 
+	 * @param instance instance
+	 * @return String
+	 */
+	public static String getIdColumnName(Object instance) {
+		Field[] instanceAttrs = instance.getClass().getDeclaredFields();
+
+		for (int i = 0; i < instanceAttrs.length; i++) {
+			if (instanceAttrs[i].isAnnotationPresent(Id.class)) {
+				Id id = instanceAttrs[i].getAnnotation(Id.class);
+				return id.nom();
+			}
+		}
+		throw new SqlGeneratorException("La classe ne possède pas de clé primaire");
+	}
+
+	/**
+	 * Recherche dans l'instance l'annotation @Id et plus particulièrement la valeur de
+	 * l'attribut.
+	 * 
+	 * @param instance instance
+	 * @return String
+	 */
+	public static String getIdColumnValue(Object instance) {
+		Field[] instanceAttrs = instance.getClass().getDeclaredFields();
+
+		for (int i = 0; i < instanceAttrs.length; i++) {
+			if (instanceAttrs[i].isAnnotationPresent(Id.class)) {
+
+				try {
+					instanceAttrs[i].setAccessible(true);
+
+					String sqlValue = null;
+					Object value = instanceAttrs[i].get(instance);
+					if (!(value instanceof Number)) {
+						sqlValue = "'" + value + "'";
+					} else {
+						sqlValue = "" + value;
+					}
+					return sqlValue;
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					throw new SqlGeneratorException(e.getMessage(), e);
+				}
+			}
+		}
+		throw new SqlGeneratorException("La classe ne possède pas de clé primaire");
 	}
 
 }

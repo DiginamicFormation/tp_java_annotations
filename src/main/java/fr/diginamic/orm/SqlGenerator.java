@@ -21,10 +21,8 @@ public final class SqlGenerator {
 
 		StringBuilder sqlBuilder = new StringBuilder("INSERT INTO ");
 
-		Class<?> classe = instance.getClass();
-		
 		// On récupère le nom de la table sur la classe
-		String nomTable = SqlGeneratorUtils.getNomTable(classe);
+		String nomTable = SqlGeneratorUtils.getNomTable(instance.getClass());
 		
 		sqlBuilder.append(nomTable).append(" (");
 
@@ -41,7 +39,41 @@ public final class SqlGenerator {
 		return sqlBuilder.toString();
 	}
 
+	/**
+	 * Génère une requête SQL UPDATE sur la base des annotations positionnées sur
+	 * l'instance de classe passée en paramètre.
+	 * 
+	 * Exemple : UPDATE UTILISATEUR 
+	 *           SET NOM='DUPOND', PRENOM='Albert', EMAIL='adupond@gmail.com' 
+	 *           WHERE id=127
+	 * 
+	 * @param instance instance de classe
+	 * @return String
+	 */
+	public static String generateSqlUpdate(Object instance) {
 
+		StringBuilder sqlBuilder = new StringBuilder("UPDATE ");
+
+		// On récupère le nom de la table sur la classe
+		String nomTable = SqlGeneratorUtils.getNomTable(instance.getClass());
+		
+		sqlBuilder.append(nomTable).append(" SET ");
+
+		// On ajoute la liste des couples COL1=VAL1
+		SqlGeneratorUtils.generateColumnsAndValues(sqlBuilder, instance);
+		
+		// On ajoute la clause WHERE
+		sqlBuilder.append(" WHERE ");
+		
+		// On ajoute la condition sur la valeur de l'identifiant
+		
+		String idColumnName = SqlGeneratorUtils.getIdColumnName(instance);
+		Object idColumnValue = SqlGeneratorUtils.getIdColumnValue(instance);
+		
+		sqlBuilder.append(idColumnName).append(" = ").append(idColumnValue);
+		
+		return sqlBuilder.toString();
+	}
 	
 
 }

@@ -3,6 +3,7 @@ package fr.diginamic.orm.entites;
 import java.util.Objects;
 
 import fr.diginamic.orm.annotations.Colonne;
+import fr.diginamic.orm.annotations.Id;
 import fr.diginamic.orm.annotations.Table;
 
 /** La classe Ville représente le concept de ville dans l'application de Recensement<br>
@@ -13,6 +14,9 @@ import fr.diginamic.orm.annotations.Table;
 @Table(nom="VILLES")
 public class Ville implements Comparable<Ville> {
 
+	@Id(nom="ID")
+	private long id;
+	
 	/** nom */
 	@Colonne(nom="NOM")
 	private String nom;
